@@ -65,6 +65,8 @@
     <Compile Include="FullPicture.Designer.cs">
       <DependentUpon>FullPicture.cs</DependentUpon>
     </Compile>
+    <Compile Include="PictureEditor.cs" />
+    <Compile Include="PictureEditorItem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
