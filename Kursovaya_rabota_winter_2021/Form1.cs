@@ -19,7 +19,7 @@ namespace Kursovaya_rabota_winter_2021
             InitializeComponent();
             this.AllowDrop = true;
             this.AutoScroll = true;
-            pictureEditor = new PictureEditor(flowLayoutPanel1.Controls);
+            pictureEditor = new PictureEditor(flowLayoutPanel1);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -69,23 +69,30 @@ namespace Kursovaya_rabota_winter_2021
 
     class PictureEditor
     {
-        int x, y;
-        Dictionary<string, PictureEditorItem> pictureEditorItems;
         Control.ControlCollection Controls;
+        List<PictureEditorItem> pictures;
+        Graphics g;
+        // возвращаем старый список всех изображений и с помощьюпоиска формируем изображение
 
-        public PictureEditor(Control.ControlCollection _controls)
+        public PictureEditor(FlowLayoutPanel flowLayoutPanel)
         {
-            Controls = _controls;
-            pictureEditorItems = new Dictionary<string, PictureEditorItem>();
-            x = 0;
-            y = 50;
+            Controls = flowLayoutPanel.Controls;
+            pictures = new List<PictureEditorItem>();
+            g = flowLayoutPanel.CreateGraphics();
         }
         public void AddItem(string file)
         {
-            PictureEditorItem picture = new PictureEditorItem(file);
-            pictureEditorItems.Add(x+" "+y,picture);
-            picture.DrawPicture(this.Controls);
-            x += 200;         
+            PictureEditorItem picture = new PictureEditorItem(file,g);
+            pictures.Add(picture);
+            picture.DrawPicture(this.Controls);       
+        }
+
+        public void MoveItem()
+        {
+            PictureEditorItem[] array = new PictureEditorItem[this.Controls.Count];
+            this.Controls.CopyTo(array,0);
+            this.Controls.Clear();
+            this.Controls.AddRange(array);
         }
 
         // находим элемент, удаляем, все остальные координаты смещаем и удаляем из контрола
@@ -93,12 +100,13 @@ namespace Kursovaya_rabota_winter_2021
         public void GeneratePicture()
         {
             ImageMagick.MagickNET.Initialize();
-            var images = pictureEditorItems.ToArray();
+            Control []images = new Control[this.Controls.Count];
+            this.Controls.CopyTo(images,0);
             var image = new ImageMagick.MagickImageCollection();
             foreach (var img in images)
             {
-                image.Add(img.Value.picture.ImageLocation);
-                image[image.Count - 1].AnimationDelay = Convert.ToInt32(img.Value.delay.Text);
+                image.Add(pictures[this.Controls.IndexOf(img)].picture.ImageLocation);
+                image[image.Count - 1].AnimationDelay = Convert.ToInt32(pictures[this.Controls.IndexOf(img)].delay.Text);
             }
             
             SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -112,15 +120,17 @@ namespace Kursovaya_rabota_winter_2021
         }
     }
 
-    class PictureEditorItem
+    class PictureEditorItem : Control
     {
         public PictureBox picture;
         Button buttondelete;
         public TextBox delay;
         Control.ControlCollection controlForm;
         GroupBox box;
+        bool moved = false;
+        Graphics layoutg;
 
-        public PictureEditorItem(string filename)
+        public PictureEditorItem(string filename, Graphics _g)
         {
             picture = new PictureBox();
             buttondelete = new Button();
@@ -136,7 +146,8 @@ namespace Kursovaya_rabota_winter_2021
             box.Width = 200;
             box.Height = 400;
             picture.SizeMode = PictureBoxSizeMode.Zoom;
-        }
+            layoutg = _g;
+            }
 
         private void button_Click(object sender, EventArgs e)
         {
@@ -145,11 +156,13 @@ namespace Kursovaya_rabota_winter_2021
 
         public void Remove()
         {
-            //controlForm.Remove(picture);
-            //controlForm.Remove(buttondelete);
-           // controlForm.Remove(delay);
             controlForm.Remove(box);
-            // удалится из списка надо
+            // удалится из списка
+        }
+
+        public void MoveItem(int ToIndex)
+        {
+           controlForm.SetChildIndex(box, ToIndex);
         }
 
         private void picture_DoubleClick(object sender, EventArgs e)
@@ -166,16 +179,51 @@ namespace Kursovaya_rabota_winter_2021
             fullPicture.Height = picture.Image.Height;
         }
 
-        public void DrawPicture(Control.ControlCollection Controls)
+        public void DrawPicture(Control.ControlCollection Controlscol)
         {
-            controlForm = Controls;
+            controlForm = Controlscol;
             box.Controls.Add(picture);
             box.Controls.Add(buttondelete);
             box.Controls.Add(delay);
-            Controls.Add(box);
+            box.AllowDrop = true;
+            picture.MouseDown += new MouseEventHandler(BoxMouseDown);
+            picture.MouseUp += new MouseEventHandler(BoxMouseUP);
+            picture.MouseMove += new MouseEventHandler(BoxMouseMove);
+            Controlscol.Add(box);
             picture.Location = new System.Drawing.Point(0,0);
             buttondelete.Location = new System.Drawing.Point(0,200);
             delay.Location = new System.Drawing.Point(0,230);           
         }
+        
+        private void BoxMouseDown(object sender, MouseEventArgs e)
+        {
+            moved = true;
+            Cursor.Current = Cursors.SizeWE;
+        } 
+
+        private void BoxMouseMove(object sender, MouseEventArgs e)
+        {
+
+        }
+        private void BoxMouseUP(object sender, MouseEventArgs e)
+        {
+            if (moved)
+            {
+                
+                if (e.X > 0 && controlForm.IndexOf(box) < (controlForm.Count-1))
+                {                   
+                    controlForm.SetChildIndex(box, (e.X / box.Width) + controlForm.IndexOf(box));
+                }
+                if(e.X < 0 && controlForm.IndexOf(box) > 0)
+                {
+                    controlForm.SetChildIndex(box, (e.X / box.Width - 1) + controlForm.IndexOf(box));
+                }
+              
+               moved = false;
+            }
+            Cursor.Current = Cursors.Default;
+        }
     }
+
+
 }
