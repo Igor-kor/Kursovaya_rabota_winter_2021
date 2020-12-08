@@ -8,11 +8,13 @@ namespace Kursovaya_rabota_winter_2021
     {
         Control.ControlCollection Controls;
         List<PictureEditorItem> pictures;
-
+        public ImageMagick.MagickImageCollection image ;
         public PictureEditor(FlowLayoutPanel flowLayoutPanel)
         {
             Controls = flowLayoutPanel.Controls;
             pictures = new List<PictureEditorItem>();
+            ImageMagick.MagickNET.Initialize();
+            image = new ImageMagick.MagickImageCollection();
         }
         public void AddItem(string file)
         {
@@ -23,8 +25,7 @@ namespace Kursovaya_rabota_winter_2021
 
         public void GeneratePicture()
         {
-            ImageMagick.MagickNET.Initialize();
-            var image = new ImageMagick.MagickImageCollection();
+            image.Clear();
 
             SortedDictionary<int, PictureEditorItem> saved = new SortedDictionary<int, PictureEditorItem>();
 
@@ -41,7 +42,12 @@ namespace Kursovaya_rabota_winter_2021
                 image.Add(img.picture.ImageLocation);
                 image[image.Count - 1].AnimationDelay = Convert.ToInt32(img.delay.Text);
             }
+           
+        }
 
+        public void SavePicture()
+        {
+            GeneratePicture();
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.DefaultExt = "*.gif";
             saveFileDialog.Filter = "Gif files(*.gif)|*.gif|All files(*.*)|*.*";
