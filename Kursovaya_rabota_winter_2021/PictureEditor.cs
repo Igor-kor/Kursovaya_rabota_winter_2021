@@ -42,7 +42,6 @@ namespace Kursovaya_rabota_winter_2021
                 image.Add(img.picture.ImageLocation);
                 image[image.Count - 1].AnimationDelay = Convert.ToInt32(img.delay.Text);
             }
-           
         }
 
         public void SavePicture()

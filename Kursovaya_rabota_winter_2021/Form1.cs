@@ -78,6 +78,21 @@ namespace Kursovaya_rabota_winter_2021
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox1.Image = Image.FromStream(imageStream);
         }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image files (*.jpg, *.jpeg, *.jpe, *.jfif, *.png) | *.jpg; *.jpeg; *.jpe; *.jfif; *.png|All files(*.*)|*.*";           
+            openFileDialog.Title = "Открыть изображения";
+            openFileDialog.Multiselect = true;
+            if (openFileDialog.ShowDialog() == DialogResult.Cancel) return;
+            if (openFileDialog.FileName.Length == 0) return;
+
+            foreach(string  filename in openFileDialog.FileNames)
+            {
+                pictureEditor.AddItem(filename);
+            }
+        }
     }
 
 

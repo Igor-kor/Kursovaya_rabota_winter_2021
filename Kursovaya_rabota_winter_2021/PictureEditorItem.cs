@@ -20,7 +20,7 @@ namespace Kursovaya_rabota_winter_2021
             box = new GroupBox();
             box.Name = filename;
             delay.Text = "100";
-            buttondelete.Text = "Delete";
+            buttondelete.Text = "Удалить";
             picture.Click += new EventHandler(picture_DoubleClick);
             buttondelete.Click += new EventHandler(button_Click);
             picture.ImageLocation = System.IO.Path.GetFullPath(filename);
